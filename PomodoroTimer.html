@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #808080;
+        }
+
+        .container {
+            background-color: black;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        #timer {
+            font-size: 6rem;
+            color: white;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: 2px solid white;
+            background-color: black;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: white;
+            color: black;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="timer">25:00</div>
+        <div class="buttons">
+            <button id="startBtn">Start</button>
+            <button id="pauseBtn" disabled>Pausa</button>
+            <button id="plusBtn">+1m</button>
+            <button id="minusBtn">-1m</button>
+            <button id="breakBtn">Pausa</button>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 25 * 60;
+        let timerId = null;
+        let isRunning = false;
+        let isWorkSession = true;
+
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const plusBtn = document.getElementById('plusBtn');
+        const minusBtn = document.getElementById('minusBtn');
+        const breakBtn = document.getElementById('breakBtn');
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timerId = setInterval(() => {
+                    timeLeft--;
+                    updateDisplay();
+                    if (timeLeft <= 0) {
+                        clearInterval(timerId);
+                        isRunning = false;
+                        alert(isWorkSession ? 'Sessione completata! Prepara la pausa' : 'Pausa terminata! Ricomincia a lavorare');
+                        if (isWorkSession) {
+                            isWorkSession = false;
+                        }
+                        updateButtons();
+                    }
+                }, 1000);
+                updateButtons();
+            }
+        }
+
+        function pauseTimer() {
+            clearInterval(timerId);
+            isRunning = false;
+            updateButtons();
+        }
+
+        function addMinute() {
+            if (!isRunning) {
+                timeLeft += 60;
+                updateDisplay();
+            }
+        }
+
+        function subtractMinute() {
+            if (!isRunning && timeLeft > 60) {
+                timeLeft -= 60;
+                updateDisplay();
+            }
+        }
+
+        function setBreak() {
+            if (!isRunning) {
+                isWorkSession = false;
+                timeLeft = 5 * 60;
+                updateDisplay();
+                updateButtons();
+            }
+        }
+
+        function updateButtons() {
+            startBtn.disabled = isRunning;
+            pauseBtn.disabled = !isRunning;
+            plusBtn.disabled = isRunning;
+            minusBtn.disabled = isRunning;
+            breakBtn.disabled = isRunning || !isWorkSession;
+        }
+
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        plusBtn.addEventListener('click', addMinute);
+        minusBtn.addEventListener('click', subtractMinute);
+        breakBtn.addEventListener('click', setBreak);
+
+        updateDisplay();
+    </script>
+</body>
+</html>
